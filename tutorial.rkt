@@ -701,8 +701,16 @@
 
 (define-relation PCFσ^
   ⊑Σ ⊆ Σ × Σ
-  [(⊑Σ Σ_1 Σ_2) ;; FIXME
-   (where #t #f)])
+  [(⊑Σ Σ_1 Σ_2)
+   (where #t ,(⊑Σ* (term Σ_1) (term Σ_2)))])
+
+(define (⊑Σ* Σ Σ^)
+  (for/and ([(a us) (in-hash Σ)])
+    (for/and ([u (in-set us)])
+      (for/or ([(a^ us^) (in-hash Σ^)])
+        (for/or ([u^ (in-set us^)])
+          (and (term (⊑A ,a ,a^))
+               (term (⊑U ,u ,u^))))))))
 
 (define-relation PCFσ^
   ⊑A ⊆ A × A
@@ -847,3 +855,8 @@
 (define (irreducible r t)
   (reach-filter r t
     (λ (t) (empty? (apply-reduction-relation r t)))))
+
+
+#;
+(reach-filter -->vσ^ (term (injσ∘ dead-code))
+              (redex-match? PCFσ^ (((0 ρ) F) Σ)))
